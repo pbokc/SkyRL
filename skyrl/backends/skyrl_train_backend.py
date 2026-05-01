@@ -76,6 +76,7 @@ def _build_skyrl_train_config(
     # that resolves other config derived from the policy model path.
     user_overrides["trainer.policy.model.path"] = base_model
     user_overrides["trainer.critic.model.path"] = base_model
+    user_overrides["trainer.ref.model.path"] = base_model
     cfg = SkyRLTrainConfig.from_cli_overrides(user_overrides)
 
     # Disable scheduler - Tinker manages learning rate externally via set_lr()
@@ -699,7 +700,7 @@ class SkyRLTrainBackend(AbstractBackend):
         )
         batch, pad_size = self._pad_batch(batch, micro_batch_size=micro_bs)
 
-        if self._cfg.trainer.algorithm.use_kl_loss:
+        if role == "policy" and self._cfg.trainer.algorithm.use_kl_loss:
             ref_output = self._dispatch.forward("ref", batch)
             batch["base_action_log_probs"] = ref_output["output"]
 
